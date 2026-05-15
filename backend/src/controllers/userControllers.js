@@ -11,28 +11,37 @@ const saltRounds = 10;
 
 exports.signup = async (req, res) => {
   try {
-    
-    if (!req.body.password || !req.body.email || !req.body.name) {
-        return res.status(400).json({ message: "All fields are required" });
-        }
-    else {
-          const otp = await sendOTPEmail(req.body.email);
-          if (!otp) {
-            return res.status(500).json({ message: "Failed to send OTP" });
-          }
-          const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-    
-          temp_data[req.body.email] = {
-          name: req.body.name,
-          password: hashedPassword,
-          otp: otp
-            };
+    const { name, email, password } = req.body;
 
-        res.status(200).json({ message: "OTP sent to email" });
-    } } catch (error) {
-        res.status(500).json({ message: "Server error" });
+    if (!password || !email || !name) {
+      return res.status(400).json({ message: "All fields are required" });
     }
-}
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: "User already exists" });
+    }
+
+    const otp = await sendOTPEmail(email);
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    temp_data[email] = {
+      name,
+      password: hashedPassword,
+      otp,
+    };
+
+    return res.status(200).json({ message: "OTP sent to email" });
+  } catch (error) {
+    console.error("Signup error:", error);
+    const message =
+      error.message === "Email send timeout"
+        ? "OTP email timed out. Check deployed mail settings and try again."
+        : "Failed to process signup request";
+
+    return res.status(500).json({ message });
+  }
+};
 
 exports.otp = async (req, res) => {
   try {
