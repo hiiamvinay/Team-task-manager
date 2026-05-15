@@ -9,6 +9,34 @@ const temp_data ={}
 
 const saltRounds = 10;
 
+const getSignupErrorMessage = (error) => {
+  if (error.message === "Email send timeout") {
+    return "OTP email timed out. Check deployed mail settings and try again.";
+  }
+
+  if (error.code === "MAIL_CONFIG_MISSING") {
+    return "GMAIL_USER or GMAIL_PASSWORD is missing in backend deployment variables.";
+  }
+
+  if (error.code === "EAUTH") {
+    return "Email login failed. Check Gmail address and app password in deployment variables.";
+  }
+
+  if (error.code === "ESOCKET" || error.code === "ECONNECTION" || error.code === "ETIMEDOUT") {
+    return "Could not connect to the email server from deployment.";
+  }
+
+  if (error.code === "ENOTFOUND") {
+    return "Email server host could not be resolved from deployment.";
+  }
+
+  if (error.name === "MongooseServerSelectionError") {
+    return "Database connection failed in deployment.";
+  }
+
+  return error.message || "Failed to process signup request";
+};
+
 exports.signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -34,10 +62,7 @@ exports.signup = async (req, res) => {
     return res.status(200).json({ message: "OTP sent to email" });
   } catch (error) {
     console.error("Signup error:", error);
-    const message =
-      error.message === "Email send timeout"
-        ? "OTP email timed out. Check deployed mail settings and try again."
-        : "Failed to process signup request";
+    const message = getSignupErrorMessage(error);
 
     return res.status(500).json({ message });
   }
