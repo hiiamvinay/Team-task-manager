@@ -1,14 +1,43 @@
-const transporter = require("../config/mailConfig");
+const { sendBrevoEmail } = require("../config/mailConfig");
 const otpGenerator = require("otp-generator");
 
 const MAIL_TIMEOUT_MS = 15000;
 
 const ensureMailConfig = () => {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_PASSWORD) {
-    const error = new Error("Mail configuration is missing");
+  if (!process.env.BREVO_API_KEY) {
+    const error = new Error("Brevo API key is missing");
     error.code = "MAIL_CONFIG_MISSING";
     throw error;
   }
+
+  if (!process.env.BREVO_API_KEY.startsWith("xkeysib-")) {
+    const error = new Error("Brevo API key format looks invalid");
+    error.code = "MAIL_CONFIG_INVALID";
+    throw error;
+  }
+
+  if (!process.env.EMAIL_FROM) {
+    const error = new Error("Email sender address is missing");
+    error.code = "EMAIL_FROM_MISSING";
+    throw error;
+  }
+};
+
+const sendWithBrevo = async ({ email, otp }) => {
+  await Promise.race([
+    sendBrevoEmail({
+      sender: {
+        name: process.env.EMAIL_FROM_NAME || "Team Task Manager",
+        email: process.env.EMAIL_FROM,
+      },
+      to: [{ email }],
+      subject: "Your OTP Code",
+      htmlContent: `<p>Your OTP of Team Task Manager : <strong>${otp}</strong></p>`,
+    }),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Email send timeout")), MAIL_TIMEOUT_MS)
+    ),
+  ]);
 };
 
 // function to generate OTP
@@ -29,21 +58,10 @@ const sendOTPEmail = async (email) => {
 
   const otp = generateOTP();
 
-  const mailOptions = {
-    from: process.env.GMAIL_USER,
-    to: email,
-    subject: "Your OTP Code",
-    text: `Your OTP of Team Task Manager : ${otp}`
-  };
-
   try {
-    await Promise.race([
-      transporter.sendMail(mailOptions),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Email send timeout")), MAIL_TIMEOUT_MS)
-      ),
-    ]);
-    console.log("OTP Email sent");
+    await sendWithBrevo({ email, otp });
+
+    console.log("OTP email sent with Brevo");
 
     return otp;   // return OTP so controller can verify
   } catch (error) {

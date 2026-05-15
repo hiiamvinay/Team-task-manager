@@ -1,13 +1,13 @@
 const User = require("../models/user");
+const PendingSignup = require("../models/pendingSignup");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const { sendOTPEmail } = require("../services/emailService");
 dotenv.config();
 
-const temp_data ={}
-
 const saltRounds = 10;
+const OTP_EXPIRY_MINUTES = 10;
 
 const getSignupErrorMessage = (error) => {
   if (error.message === "Email send timeout") {
@@ -15,11 +15,19 @@ const getSignupErrorMessage = (error) => {
   }
 
   if (error.code === "MAIL_CONFIG_MISSING") {
-    return "GMAIL_USER or GMAIL_PASSWORD is missing in backend deployment variables.";
+    return "BREVO_API_KEY is missing in backend deployment variables.";
+  }
+
+  if (error.code === "MAIL_CONFIG_INVALID") {
+    return "BREVO_API_KEY format is invalid. Use the Brevo API key that starts with xkeysib-.";
+  }
+
+  if (error.code === "EMAIL_FROM_MISSING") {
+    return "EMAIL_FROM is missing for Brevo email delivery.";
   }
 
   if (error.code === "EAUTH") {
-    return "Email login failed. Check Gmail address and app password in deployment variables.";
+    return "Email provider authentication failed. Check your Brevo API key.";
   }
 
   if (error.code === "ESOCKET" || error.code === "ECONNECTION" || error.code === "ETIMEDOUT") {
@@ -28,6 +36,10 @@ const getSignupErrorMessage = (error) => {
 
   if (error.code === "ENOTFOUND") {
     return "Email server host could not be resolved from deployment.";
+  }
+
+  if (error.code === "BREVO_API_ERROR") {
+    return error.message || "Brevo email request failed.";
   }
 
   if (error.name === "MongooseServerSelectionError") {
@@ -40,24 +52,35 @@ const getSignupErrorMessage = (error) => {
 exports.signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    const normalizedEmail = email?.trim().toLowerCase();
 
-    if (!password || !email || !name) {
+    if (!password || !normalizedEmail || !name) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(409).json({ message: "User already exists" });
     }
 
-    const otp = await sendOTPEmail(email);
+    const otp = await sendOTPEmail(normalizedEmail);
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    temp_data[email] = {
-      name,
-      password: hashedPassword,
-      otp,
-    };
+    await PendingSignup.findOneAndUpdate(
+      { email: normalizedEmail },
+      {
+        name: name.trim(),
+        email: normalizedEmail,
+        password: hashedPassword,
+        otp,
+        expiresAt: new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000),
+      },
+      {
+        upsert: true,
+        returnDocument: "after",
+        setDefaultsOnInsert: true,
+      }
+    );
 
     return res.status(200).json({ message: "OTP sent to email" });
   } catch (error) {
@@ -71,24 +94,43 @@ exports.signup = async (req, res) => {
 exports.otp = async (req, res) => {
   try {
     const { email, otp } = req.body;
-    if (!email || !otp) {
+    const normalizedEmail = email?.trim().toLowerCase();
+
+    if (!normalizedEmail || !otp) {
       return res.status(400).json({ message: "Email and OTP are required" });
     }
-    if (!temp_data[email]) {
+
+    const pendingSignup = await PendingSignup.findOne({ email: normalizedEmail });
+
+    if (!pendingSignup) {
       return res.status(400).json({ message: "No signup in progress for this email" });
     }
-    if (temp_data[email].otp !== otp) {
+
+    if (pendingSignup.expiresAt < new Date()) {
+      await PendingSignup.deleteOne({ _id: pendingSignup._id });
+      return res.status(400).json({ message: "OTP has expired. Please sign up again." });
+    }
+
+    if (pendingSignup.otp !== otp) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
-    // Create user
+
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingUser) {
+      await PendingSignup.deleteOne({ _id: pendingSignup._id });
+      return res.status(409).json({ message: "User already exists" });
+    }
+
     const newUser = new User({
-      name: temp_data[email].name,
-      email: email,
-      password: temp_data[email].password
+      name: pendingSignup.name,
+      email: normalizedEmail,
+      password: pendingSignup.password
     });
+
     await newUser.save();
-    // Clean up temp data
-    delete temp_data[email];
+
+    await PendingSignup.deleteOne({ _id: pendingSignup._id });
+
     res.status(201).json({ message: "User created successfully" });
   } catch (error) {
     console.error(error);
