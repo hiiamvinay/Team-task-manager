@@ -21,8 +21,8 @@ This project includes:
 
 ## Production Deployment
 
-- Frontend: 
-- Backend: 
+- Frontend: https://team-task-manager-production-7eff.up.railway.app/
+- Backend:  https://team-task-manager-production-ebdf.up.railway.app/
 
 ## Main Features
 
