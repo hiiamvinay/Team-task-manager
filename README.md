@@ -101,6 +101,10 @@ This project includes:
 
 - `GET /api/dashboard`
 
+#### System
+
+- `GET /api/system/startup`
+
 ## Project Structure
 
 ```text
@@ -171,11 +175,11 @@ npm install
 
 ### 2. Start the backend
 
-There is currently no backend npm start script, so run the server directly:
+Start the backend with:
 
 ```bash
 cd backend
-node src/server.js
+npm start
 ```
 
 ### 3. Start the frontend

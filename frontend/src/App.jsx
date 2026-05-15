@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -9,8 +10,13 @@ import Dashboard from './pages/Dashboard/Dashboard'
 import ProjectManagement from './pages/ProjectManagement/ProjectManagement'
 import TaskManagement from './pages/TaskManagement/TaskManagement'
 import ProtectedRoute from './components/ProtectedRoute'
+import { triggerStartupRequest } from './services/appStartup'
 
 function App() {
+  useEffect(() => {
+    triggerStartupRequest()
+  }, [])
+
   return (
     <BrowserRouter>
       <Routes>
