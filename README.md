@@ -21,8 +21,8 @@ This project includes:
 
 ## Production Deployment
 
-- Frontend: https://respectful-acceptance-production-69e2.up.railway.app/
-- Backend: https://team-task-manager-production-3489.up.railway.app
+- Frontend: 
+- Backend: 
 
 ## Main Features
 
@@ -141,10 +141,11 @@ Create a `.env` file for the backend with:
 
 ```env
 PORT=5000
-MONGO_URI=your_mongodb_connection_string
+MONGO_URI=your_mongodb_connection_string, =random143
+EMAIL_FROM=your_email
 JWT_SECRET=your_jwt_secret
-GMAIL_USER=your_email_address
-GMAIL_PASSWORD=your_app_password
+BREVO_API_KEY=api_key 
+EMAIL_FROM_NAME=your_name
 ```
 
 ### Frontend
