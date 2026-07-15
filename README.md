@@ -1,111 +1,84 @@
 # Team Task Manager
 
-A full-stack team collaboration app for managing projects, members, tasks, and progress dashboards.
+Team Task Manager is a full-stack collaboration platform for organizing projects, managing team membership, assigning work, and tracking delivery progress through a role-aware dashboard.
 
-## Overview
+It is built as a split frontend and backend application:
 
-This project includes:
+- `frontend/`: React + Vite single-page application
+- `backend/`: Express API with MongoDB persistence
 
-- JWT-based authentication
-- OTP-based signup verification by email
-- Project management with Admin and Member roles
-- Task management with assignment, priority, due dates, and status tracking
-- A dashboard for task totals, status breakdown, and overdue work
-- React frontend and Express + MongoDB backend
+Production deployment: `https://team-task-manager-1-ckwu.onrender.com/`
 
-## Tech Stack
+## Product Highlights
 
-- Frontend: React, Vite, React Router, React Toastify
-- Backend: Node.js, Express, Mongoose, JWT, bcrypt, Nodemailer
-- Database: MongoDB
+- JWT-based authentication for protected application access
+- Email OTP verification during signup
+- Forgot-password flow with OTP-based password reset
+- Project workspaces with per-project roles: `Admin` and `Member`
+- Member management for project administrators
+- Task creation, assignment, status updates, and deletion
+- Dashboard metrics for total tasks, status distribution, and overdue work
+- Clean separation between API, business logic, data models, and UI pages
 
-## Production Deployment
-
-- Frontend: https://team-task-manager-production-7eff.up.railway.app/
-- Backend:  https://team-task-manager-production-ebdf.up.railway.app/
-
-## Main Features
-
-### Authentication
-
-- Sign up with name, email, and password
-- Receive OTP over email and verify account
-- Log in to receive a JWT token
-- Protected frontend routes based on token presence and expiry
-
-### Project Management
-
-- Create projects
-- Project creator becomes `Admin`
-- Admin can add members
-- Admin can remove members
-- Admin can delete projects
-- Members can view assigned projects
-
-### Task Management
-
-- Create tasks with:
-  - Title
-  - Description
-  - Due Date
-  - Priority
-- Assign tasks to project members
-- Update status:
-  - `To Do`
-  - `In Progress`
-  - `Done`
-
-### Dashboard
-
-- Total tasks
-- Tasks by status
-- Overdue tasks
-
-## App Routes
+## Architecture
 
 ### Frontend
 
-- `/` landing page
-- `/login` login
-- `/signup` signup
-- `/otp` OTP verification
-- `/dashboard` metrics dashboard
-- `/projects` project management
-- `/tasks` task management
+- React 19
+- Vite
+- React Router
+- React Toastify
 
-### Backend API
+### Backend
 
-#### Users
+- Node.js
+- Express
+- Mongoose
+- JSON Web Tokens
+- bcrypt
+- Brevo email integration for OTP delivery
 
-- `POST /api/users/signup`
-- `POST /api/users/otp`
-- `POST /api/users/login`
-- `GET /api/users/me`
-- `GET /api/users`
+### Data Store
 
-#### Projects
+- MongoDB
 
-- `POST /api/projects`
-- `GET /api/projects`
-- `POST /api/projects/:projectId/members`
-- `DELETE /api/projects/:projectId/members/:memberId`
-- `DELETE /api/projects/:projectId`
+## Core Capabilities
 
-#### Tasks
+### Authentication and Account Security
 
-- `POST /api/tasks`
-- `GET /api/tasks/project/:projectId`
-- `PATCH /api/tasks/:taskId`
+- User signup with `name`, `email`, and `password`
+- OTP verification before account creation is finalized
+- Login with JWT issuance
+- Forgot-password request via email OTP
+- Password reset using OTP and a new password
+- Protected backend routes using bearer token authentication
 
-#### Dashboard
+### Project Management
 
-- `GET /api/dashboard`
+- Create a project
+- Automatically assign project creator as `Admin`
+- List projects for the authenticated user
+- Add members by email
+- Update member role during add flow
+- Remove members from a project
+- Delete a project as an admin
 
-#### System
+### Task Management
 
-- `GET /api/system/startup`
+- Create tasks inside a project
+- Assign tasks only to existing project members
+- Set title, description, due date, priority, and assignee
+- Track status using `To Do`, `In Progress`, and `Done`
+- Delete tasks from the task workspace
 
-## Project Structure
+### Dashboard and Visibility
+
+- Aggregate tasks across all projects accessible to the authenticated user
+- View total task count
+- View task count by status
+- View overdue task count
+
+## Repository Structure
 
 ```text
 team-task-manager/
@@ -119,103 +92,206 @@ team-task-manager/
 │   │   ├── services/
 │   │   ├── app.js
 │   │   └── server.js
-│   └── package.json
+│   ├── package.json
+│   └── package-lock.json
 ├── frontend/
+│   ├── public/
 │   ├── src/
 │   │   ├── components/
 │   │   ├── pages/
+│   │   ├── services/
 │   │   ├── App.jsx
 │   │   └── main.jsx
-│   └── package.json
+│   ├── package.json
+│   └── package-lock.json
 ├── doc/
 │   ├── API.md
 │   └── FLOW.md
+├── LICENSE
 └── README.md
 ```
 
-## Environment Variables
+## Application Routes
 
-### Backend
+### Frontend Routes
 
-Create a `.env` file for the backend with:
+| Route | Purpose |
+| --- | --- |
+| `/` | Landing page |
+| `/login` | User login |
+| `/signup` | New account registration |
+| `/otp` | Signup OTP verification |
+| `/forgot-password` | Request password reset OTP |
+| `/reset-password` | Reset password using OTP |
+| `/dashboard` | Dashboard metrics |
+| `/projects` | Project and membership management |
+| `/tasks` | Task creation and task operations |
+
+### Backend API Routes
+
+#### User and Auth
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/users/signup` | Start signup and send OTP |
+| `POST` | `/api/users/otp` | Verify signup OTP and create user |
+| `POST` | `/api/users/login` | Authenticate and issue JWT |
+| `POST` | `/api/users/forgot-password` | Send password reset OTP |
+| `POST` | `/api/users/reset-password` | Reset password using OTP |
+| `GET` | `/api/users/me` | Get authenticated user profile |
+| `GET` | `/api/users` | List users |
+
+#### Projects
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/projects` | Create project |
+| `GET` | `/api/projects` | Get projects for current user |
+| `POST` | `/api/projects/:projectId/members` | Add or update project member |
+| `DELETE` | `/api/projects/:projectId/members/:memberId` | Remove project member |
+| `DELETE` | `/api/projects/:projectId` | Delete project |
+
+#### Tasks
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/tasks` | Create task |
+| `GET` | `/api/tasks/project/:projectId` | List tasks for a project |
+| `PATCH` | `/api/tasks/:taskId` | Update task details or status |
+| `DELETE` | `/api/tasks/:taskId` | Delete task |
+
+#### Dashboard and System
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/dashboard` | Get dashboard metrics |
+| `GET` | `/api/system/startup` | Health-style startup status |
+
+## Access Control Model
+
+### Project Admin
+
+- Create projects
+- Add members
+- Change member role through the add-member flow
+- Remove members
+- Delete projects
+
+### Project Member
+
+- Access projects they belong to
+- View project tasks
+- Create tasks in accessible projects
+- Update task status and task details through authorized API access
+- Delete tasks in accessible projects
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 18 or newer recommended
+- npm
+- MongoDB instance
+- Brevo API key for OTP email delivery
+
+### Environment Configuration
+
+### Backend `.env`
+
+Create `backend/.env` with:
 
 ```env
 PORT=5000
-MONGO_URI=your_mongodb_connection_string, =random143
-EMAIL_FROM=your_email
+MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
-BREVO_API_KEY=api_key 
-EMAIL_FROM_NAME=your_name
+BREVO_API_KEY=your_brevo_api_key
+EMAIL_FROM=your_verified_sender_email
+EMAIL_FROM_NAME=Team Task Manager
 ```
 
-### Frontend
+### Frontend `.env`
 
-Create a `.env` file inside `frontend/` with:
+Create `frontend/.env` with:
 
 ```env
 VITE_API=http://localhost:5000
 ```
 
-## Getting Started
+### Installation
 
-### 1. Install dependencies
-
-Backend:
+### Backend
 
 ```bash
 cd backend
 npm install
 ```
 
-Frontend:
+### Frontend
 
 ```bash
 cd frontend
 npm install
 ```
 
-### 2. Start the backend
+### Running the Application
 
-Start the backend with:
+### Start the backend
 
 ```bash
 cd backend
 npm start
 ```
 
-### 3. Start the frontend
+The API starts on `http://localhost:5000` unless overridden by `PORT`.
+
+### Start the frontend
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Frontend will usually run at:
+The frontend typically starts on `http://localhost:5173`.
 
-```text
-http://localhost:5173
+## Operational Notes
+
+- The frontend stores the JWT in `localStorage`
+- Signup is not completed until the OTP is verified
+- Password reset is OTP-driven and email-dependent
+- CORS is enabled in the Express application
+- Dashboard metrics are scoped to projects the authenticated user belongs to
+- Task assignees must already be members of the target project
+
+## Verification
+
+Useful local checks:
+
+```bash
+cd backend
+node --check src/server.js
 ```
 
-## Current Roles
+```bash
+cd frontend
+npm run build
+```
 
-- `Admin`
-  - Create projects
-  - Add or remove members
-  - Delete projects
-- `Member`
-  - Access assigned projects
-  - Work with project tasks they can access
+## Documentation
 
-## Notes
+Additional project notes are available in:
 
-- Authentication uses JWT stored in `localStorage`
-- Signup uses OTP verification before user creation
-- Task dashboard metrics are calculated from projects the logged-in user belongs to
-- The repository also contains supporting docs in [doc/API.md](/home/vinay/team-task-manager/doc/API.md:1) and [doc/FLOW.md](/home/vinay/team-task-manager/doc/FLOW.md:1)
+- [doc/API.md](/home/vinay/team-task-manager/doc/API.md:1)
+- [doc/FLOW.md](/home/vinay/team-task-manager/doc/FLOW.md:1)
 
-## Future Improvements
+## Roadmap Opportunities
 
-- Add backend npm scripts for `dev` and `start`
-- Add task delete and edit UI
-- Add charts to the dashboard
-- Add tests for API and frontend flows
+- Add automated backend and frontend test coverage
+- Introduce request validation middleware for stronger API contracts
+- Add audit logging for project and task mutations
+- Support refresh tokens or secure HTTP-only cookie auth
+- Add pagination and filtering for projects and tasks
+- Expand dashboard analytics and trend visualization
+
+## License
+
+This repository is distributed under the terms defined in [LICENSE](/home/vinay/team-task-manager/LICENSE:1).
