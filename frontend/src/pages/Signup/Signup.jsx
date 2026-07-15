@@ -1,6 +1,6 @@
 import './Signup.css'
-import { Link, useNavigate} from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useNavigate} from 'react-router-dom'
+import { useState } from 'react'
 import { toast } from 'react-toastify'    
 
 function Signup() {
@@ -27,7 +27,7 @@ function Signup() {
       } else {
         toast.error(data.message)
       }
-    } catch (error) {
+    } catch {
       toast.error('An error occurred during signup')
     }
   }

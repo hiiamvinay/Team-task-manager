@@ -50,7 +50,7 @@ function OTP() {
       } else {
         toast.error(data.message)
       }
-    } catch (error) {
+    } catch {
       toast.error('An error occurred during OTP verification')
     }
   }

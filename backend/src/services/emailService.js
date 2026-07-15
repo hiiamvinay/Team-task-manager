@@ -23,7 +23,7 @@ const ensureMailConfig = () => {
   }
 };
 
-const sendWithBrevo = async ({ email, otp }) => {
+const sendWithBrevo = async ({ email, otp, subject, htmlContent }) => {
   await Promise.race([
     sendBrevoEmail({
       sender: {
@@ -31,8 +31,8 @@ const sendWithBrevo = async ({ email, otp }) => {
         email: process.env.EMAIL_FROM,
       },
       to: [{ email }],
-      subject: "Your OTP Code",
-      htmlContent: `<p>Your OTP of Team Task Manager : <strong>${otp}</strong></p>`,
+      subject,
+      htmlContent,
     }),
     new Promise((_, reject) =>
       setTimeout(() => reject(new Error("Email send timeout")), MAIL_TIMEOUT_MS)
@@ -53,13 +53,24 @@ const generateOTP = () => {
 };
 
 // function to send OTP email
-const sendOTPEmail = async (email) => {
+const sendOTPEmail = async (
+  email,
+  {
+    subject = "Your OTP Code",
+    htmlContent = (otp) => `<p>Your OTP of Team Task Manager : <strong>${otp}</strong></p>`,
+  } = {}
+) => {
   ensureMailConfig();
 
   const otp = generateOTP();
 
   try {
-    await sendWithBrevo({ email, otp });
+    await sendWithBrevo({
+      email,
+      otp,
+      subject,
+      htmlContent: htmlContent(otp),
+    });
 
     console.log("OTP email sent with Brevo");
 

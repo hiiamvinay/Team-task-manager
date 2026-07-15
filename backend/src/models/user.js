@@ -13,6 +13,14 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
+    },
+    resetPasswordOtp: {
+        type: String,
+        default: null
+    },
+    resetPasswordExpiresAt: {
+        type: Date,
+        default: null
     }
 }, { timestamps: true });
 

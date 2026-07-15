@@ -9,7 +9,7 @@ dotenv.config();
 const saltRounds = 10;
 const OTP_EXPIRY_MINUTES = 10;
 
-const getSignupErrorMessage = (error) => {
+const getAuthEmailErrorMessage = (error) => {
   if (error.message === "Email send timeout") {
     return "OTP email timed out. Check deployed mail settings and try again.";
   }
@@ -85,7 +85,7 @@ exports.signup = async (req, res) => {
     return res.status(200).json({ message: "OTP sent to email" });
   } catch (error) {
     console.error("Signup error:", error);
-    const message = getSignupErrorMessage(error);
+    const message = getAuthEmailErrorMessage(error);
 
     return res.status(500).json({ message });
   }
@@ -141,9 +141,13 @@ exports.otp = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = email?.trim().toLowerCase();
 
-    // Check if user exists
-    const user = await User.findOne({ email });
+    if (!normalizedEmail || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -162,5 +166,78 @@ exports.login = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+  }
+}
+
+exports.requestPasswordResetOtp = async (req, res) => {
+  try {
+    const normalizedEmail = req.body.email?.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      return res.status(404).json({ message: "No account found with this email" });
+    }
+
+    const otp = await sendOTPEmail(normalizedEmail, {
+      subject: "Reset your password",
+      htmlContent: (generatedOtp) =>
+        `<p>Use this OTP to reset your Team Task Manager password: <strong>${generatedOtp}</strong></p>`,
+    });
+
+    user.resetPasswordOtp = otp;
+    user.resetPasswordExpiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+    await user.save();
+
+    return res.status(200).json({ message: "Password reset OTP sent to email" });
+  } catch (error) {
+    console.error("Password reset OTP error:", error);
+    const message = getAuthEmailErrorMessage(error);
+
+    return res.status(500).json({ message });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, otp, password } = req.body;
+    const normalizedEmail = email?.trim().toLowerCase();
+
+    if (!normalizedEmail || !otp || !password) {
+      return res.status(400).json({ message: "Email, OTP, and new password are required" });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      return res.status(404).json({ message: "No account found with this email" });
+    }
+
+    if (!user.resetPasswordOtp || !user.resetPasswordExpiresAt) {
+      return res.status(400).json({ message: "No password reset request found for this email" });
+    }
+
+    if (user.resetPasswordExpiresAt < new Date()) {
+      user.resetPasswordOtp = null;
+      user.resetPasswordExpiresAt = null;
+      await user.save();
+      return res.status(400).json({ message: "OTP has expired. Please request a new one." });
+    }
+
+    if (user.resetPasswordOtp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    user.password = await bcrypt.hash(password, saltRounds);
+    user.resetPasswordOtp = null;
+    user.resetPasswordExpiresAt = null;
+    await user.save();
+
+    return res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 }

@@ -137,6 +137,12 @@
   color: #edf2f7;
 }
 
+.tasks-button-danger {
+  background: rgba(248, 113, 113, 0.16);
+  color: #fecaca;
+  border: 1px solid rgba(248, 113, 113, 0.28);
+}
+
 .tasks-section-header {
   display: flex;
   justify-content: space-between;
@@ -231,6 +237,12 @@
 .task-status-row label {
   color: #cbd5e1;
   font-size: 0.95rem;
+}
+
+.task-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 @media (max-width: 920px) {

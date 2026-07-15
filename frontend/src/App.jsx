@@ -6,6 +6,8 @@ import LandingPage from './pages/LandingPage/LandingPage'
 import Login from './pages/Login/Login'
 import Signup from './pages/Signup/Signup'
 import OTP from './pages/OTP/OTP'
+import ForgotPassword from './pages/ForgotPassword/ForgotPassword'
+import ResetPassword from './pages/ResetPassword/ResetPassword'
 import Dashboard from './pages/Dashboard/Dashboard'
 import ProjectManagement from './pages/ProjectManagement/ProjectManagement'
 import TaskManagement from './pages/TaskManagement/TaskManagement'
@@ -24,6 +26,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/otp" element={<OTP />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/projects" element={<ProjectManagement />} />

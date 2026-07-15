@@ -183,6 +183,31 @@ function TaskManagement() {
     }
   }
 
+  const handleDeleteTask = async (taskId) => {
+    const shouldDelete = window.confirm('Are you sure you want to delete this task?')
+
+    if (!shouldDelete) {
+      return
+    }
+
+    try {
+      const response = await fetch(`${apiUrl}/api/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      })
+      const data = await readResponseData(response)
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Unable to delete task')
+      }
+
+      setTasks((prev) => prev.filter((task) => task.id !== taskId))
+      toast.success(data.message || 'Task deleted successfully')
+    } catch (error) {
+      toast.error(error.message || 'Unable to delete task')
+    }
+  }
+
   if (isLoading) {
     return (
       <main className="tasks-page">
@@ -345,6 +370,16 @@ function TaskManagement() {
                         <option value="In Progress">In Progress</option>
                         <option value="Done">Done</option>
                       </select>
+                    </div>
+
+                    <div className="task-actions">
+                      <button
+                        type="button"
+                        className="tasks-button tasks-button-danger"
+                        onClick={() => handleDeleteTask(task.id)}
+                      >
+                        Delete Task
+                      </button>
                     </div>
                   </article>
                 ))}

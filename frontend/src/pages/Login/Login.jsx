@@ -32,7 +32,7 @@ function Login() {
       } else {
         toast.error(data.message || 'Invalid credentials')
       }
-    } catch (error) {
+    } catch {
       toast.error('An error occurred during login')
     }
   }
@@ -50,6 +50,10 @@ function Login() {
 
             <label htmlFor="password">Password</label>
             <input id="password" name="password" type="password" placeholder="Enter your password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+
+            <Link className="login-forgot-link" to="/forgot-password">
+              Forgot password?
+            </Link>
 
             <button type="submit" className="button button-primary" onClick={handleSubmit}>
               Login
