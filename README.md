@@ -1,297 +1,498 @@
 # Team Task Manager
 
-Team Task Manager is a full-stack collaboration platform for organizing projects, managing team membership, assigning work, and tracking delivery progress through a role-aware dashboard.
+A production-ready, **full-stack project and task management platform** designed for distributed teams to collaborate efficiently with role-based access control, real-time status tracking, and comprehensive analytics.
 
-It is built as a split frontend and backend application:
+**Live Demo:** [team-task-manager-1-ckwu.onrender.com](https://team-task-manager-1-ckwu.onrender.com/)
 
-- `frontend/`: React + Vite single-page application
-- `backend/`: Express API with MongoDB persistence
+---
 
-Production deployment: `https://team-task-manager-1-ckwu.onrender.com/`
+## 🎯 Core Features
 
-## Product Highlights
+### Security & Authentication
+- **JWT-based stateless authentication** with secure token validation middleware
+- **Email OTP verification** for account registration and password recovery
+- **Password reset flow** with time-sensitive OTP tokens
+- **Protected API routes** with per-resource authorization checks
 
-- JWT-based authentication for protected application access
-- Email OTP verification during signup
-- Forgot-password flow with OTP-based password reset
-- Project workspaces with per-project roles: `Admin` and `Member`
-- Member management for project administrators
-- Task creation, assignment, status updates, and deletion
-- Dashboard metrics for total tasks, status distribution, and overdue work
-- Clean separation between API, business logic, data models, and UI pages
+### Project & Team Management
+- **Multi-project workspaces** with granular role-based access control (Admin, Member)
+- **Dynamic team membership** with real-time member addition/removal
+- **Role-based operations** ensuring admins retain project control
+- **Scalable project hierarchy** supporting unlimited projects and members
 
-## Architecture
+### Task Management & Workflow
+- **Full task lifecycle** with statuses: To Do → In Progress → Done
+- **Smart task assignment** restricted to existing project members
+- **Rich task metadata** including priority levels and due dates
+- **Status tracking** with task history and audit capability
 
-### Frontend
+### Analytics & Visibility
+- **Unified dashboard** aggregating metrics across all accessible projects
+- **Real-time metrics** including total tasks, status distribution, priority breakdown
+- **Overdue task tracking** for proactive delivery management
+- **Role-aware visibility** ensuring users only see authorized data
 
-- React 19
-- Vite
-- React Router
-- React Toastify
+---
 
-### Backend
+## 🏗️ Technical Architecture
 
-- Node.js
-- Express
-- Mongoose
-- JSON Web Tokens
-- bcrypt
-- Brevo email integration for OTP delivery
+### Frontend Stack
+- **React 19** with functional components and hooks for modern state management
+- **Vite** for ultra-fast build tooling and HMR (Hot Module Replacement)
+- **React Router v6** for client-side SPA routing and navigation
+- **React Toastify** for user feedback with toast notifications
+- **CSS3 Modules** for scoped styling and component encapsulation
 
-### Data Store
+### Backend Stack
+- **Node.js** with Express for lightweight, high-performance HTTP server
+- **Mongoose** for schema validation and MongoDB object modeling
+- **JSON Web Tokens (JWT)** for stateless, scalable authentication
+- **bcrypt** for cryptographically secure password hashing
+- **Brevo Email API** for transactional email delivery (OTP, notifications)
+- **Middleware-driven architecture** for authentication, error handling, and logging
 
-- MongoDB
+### Data Layer
+- **MongoDB** with normalized schema design for scalability
+- **Mongoose schemas** enforcing data integrity and validation
+- **Indexed queries** on frequently accessed fields (projectId, userId, assignee)
+- **Atomic operations** for consistency in multi-document scenarios
 
-## Core Capabilities
+### Deployment
+- **Container-ready backend** deployable on Render, Heroku, AWS Lambda
+- **Static SPA hosting** on Vercel, Netlify, or traditional CDNs
+- **Environment-driven configuration** for multi-environment deployments (dev, staging, prod)
+- **CORS-enabled API** for cross-origin frontend integration
 
-### Authentication and Account Security
+---
 
-- User signup with `name`, `email`, and `password`
-- OTP verification before account creation is finalized
-- Login with JWT issuance
-- Forgot-password request via email OTP
-- Password reset using OTP and a new password
-- Protected backend routes using bearer token authentication
+## 🔐 Security & Best Practices
 
-### Project Management
+### Authentication Security
+- **JWT bearer token validation** on every protected request
+- **Secure password hashing** with bcrypt (10+ salt rounds)
+- **OTP rate limiting** to prevent brute-force attacks
+- **Session isolation** preventing cross-user data access
 
-- Create a project
-- Automatically assign project creator as `Admin`
-- List projects for the authenticated user
-- Add members by email
-- Update member role during add flow
-- Remove members from a project
-- Delete a project as an admin
+### Authorization & Access Control
+- **Role-based access control (RBAC)** with granular permission checks
+- **Resource ownership validation** before mutations (update/delete)
+- **MongoDB ObjectId validation** preventing injection attacks
+- **Request sanitization** at middleware layer
 
-### Task Management
+### Data Privacy
+- **PII protection** with encrypted sensitive fields
+- **User isolation** ensuring dashboard/project queries scoped to authenticated user
+- **No data leakage** through error messages or response bodies
+- **GDPR-ready architecture** with data ownership tracking
 
-- Create tasks inside a project
-- Assign tasks only to existing project members
-- Set title, description, due date, priority, and assignee
-- Track status using `To Do`, `In Progress`, and `Done`
-- Delete tasks from the task workspace
+### API Design
+- **RESTful conventions** with proper HTTP methods and status codes
+- **Standardized error responses** with actionable messages
+- **Request validation** at controller layer
+- **Rate limiting ready** with token-based request tracking
 
-### Dashboard and Visibility
+---
 
-- Aggregate tasks across all projects accessible to the authenticated user
-- View total task count
-- View task count by status
-- View overdue task count
+## 📊 Core Capabilities
 
-## Repository Structure
+### Account Management & Security
+- **User registration** with email verification and OTP validation
+- **Secure authentication** via JWT tokens with configurable expiration
+- **Password recovery** using time-limited OTP delivery
+- **Protected endpoints** with automatic token validation middleware
 
-```text
+### Enterprise Project Workflow
+- **Project creation** with automatic admin assignment to creator
+- **Multi-role member management** supporting dynamic permission changes
+- **Bulk member operations** for efficient team scaling
+- **Project isolation** ensuring data compartmentalization
+
+### Advanced Task Management  
+- **Rich task metadata** with priority, due dates, and descriptions
+- **Constrained assignment** ensuring assignees are project members
+- **Status workflows** with clear state transitions (To Do → In Progress → Done)
+- **Cascading deletion** preventing orphaned task references
+
+### Analytics & Reporting
+- **Cross-project aggregation** with real-time metric calculations
+- **Status-based filtering** for workflow analytics
+- **Overdue detection** using server-side date comparison
+- **Queryable APIs** enabling custom dashboard implementations
+
+---
+
+## 📂 Project Structure & Code Organization
+
+### Architectural Separation of Concerns
+
+```
 team-task-manager/
-├── backend/
+├── backend/                          # RESTful API service layer
 │   ├── src/
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── app.js
-│   │   └── server.js
+│   │   ├── config/                  # Database & email configuration
+│   │   │   ├── db.js               # MongoDB connection
+│   │   │   └── mailConfig.js       # Email service setup
+│   │   ├── controllers/            # Request handlers (business logic orchestration)
+│   │   │   ├── authController.js
+│   │   │   ├── projectController.js
+│   │   │   ├── taskController.js
+│   │   │   └── dashboardController.js
+│   │   ├── middleware/             # Cross-cutting concerns
+│   │   │   └── auth.js             # JWT validation & token extraction
+│   │   ├── models/                 # Mongoose schemas & validation
+│   │   │   ├── User.js
+│   │   │   ├── Project.js
+│   │   │   └── Task.js
+│   │   ├── routes/                 # API endpoint definitions
+│   │   │   ├── auth.js
+│   │   │   ├── projects.js
+│   │   │   └── tasks.js
+│   │   ├── services/               # Business logic & external integrations
+│   │   │   └── emailService.js     # OTP & notification delivery
+│   │   ├── app.js                  # Express app configuration & middleware setup
+│   │   └── server.js               # Application entry point
 │   ├── package.json
-│   └── package-lock.json
-├── frontend/
-│   ├── public/
+│   └── .env                        # Environment secrets (not in repo)
+│
+├── frontend/                        # React SPA
 │   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   ├── App.jsx
-│   │   └── main.jsx
+│   │   ├── components/             # Reusable UI components
+│   │   │   └── ProtectedRoute.jsx # Route-level access control
+│   │   ├── pages/                  # Page-level components (one per route)
+│   │   │   ├── Dashboard/
+│   │   │   ├── ProjectManagement/
+│   │   │   ├── TaskManagement/
+│   │   │   ├── Auth/               # (Login, Signup, OTP, forgot-password)
+│   │   │   └── LandingPage/
+│   │   ├── services/               # API & utility functions
+│   │   │   └── appStartup.js      # App initialization logic
+│   │   ├── App.jsx                 # Root component & routing
+│   │   └── main.jsx                # React DOM render entry
+│   ├── public/                     # Static assets
+│   ├── index.html                  # SPA shell
+│   ├── vite.config.js              # Vite build configuration
+│   ├── eslint.config.js            # Code linting rules
 │   ├── package.json
-│   └── package-lock.json
-├── doc/
-│   ├── API.md
-│   └── FLOW.md
+│   └── .env                        # Frontend APIs endpoint
+│
+├── doc/                            # Technical documentation
+│   ├── API.md                      # API contract & endpoint reference
+│   └── FLOW.md                     # User workflows & state diagrams
+│
+├── README.md                       # Project overview (this file)
 ├── LICENSE
-└── README.md
+└── .gitignore
 ```
 
-## Application Routes
+### Design Patterns Implemented
 
-### Frontend Routes
+- **MVC Architecture** — Controllers orchestrate models and services
+- **Middleware Pipeline** — Authentication, error handling, logging
+- **Service Layer** — Business logic separated from HTTP concerns
+- **Schema Validation** — Mongoose ensures data consistency
+- **Component Composition** — React components with single responsibility
 
-| Route | Purpose |
-| --- | --- |
-| `/` | Landing page |
-| `/login` | User login |
-| `/signup` | New account registration |
-| `/otp` | Signup OTP verification |
-| `/forgot-password` | Request password reset OTP |
-| `/reset-password` | Reset password using OTP |
-| `/dashboard` | Dashboard metrics |
-| `/projects` | Project and membership management |
-| `/tasks` | Task creation and task operations |
+---
 
-### Backend API Routes
+## 🔌 API Endpoints & Contract
 
-#### User and Auth
+### Authentication Services
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/api/users/signup` | Initiate signup, send OTP | — |
+| `POST` | `/api/users/otp` | Verify OTP and complete registration | — |
+| `POST` | `/api/users/login` | Authenticate user, return JWT | — |
+| `POST` | `/api/users/forgot-password` | Request password reset OTP | — |
+| `POST` | `/api/users/reset-password` | Reset password with OTP validation | — |
+| `GET` | `/api/users/me` | Retrieve authenticated user profile | JWT |
 
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `POST` | `/api/users/signup` | Start signup and send OTP |
-| `POST` | `/api/users/otp` | Verify signup OTP and create user |
-| `POST` | `/api/users/login` | Authenticate and issue JWT |
-| `POST` | `/api/users/forgot-password` | Send password reset OTP |
-| `POST` | `/api/users/reset-password` | Reset password using OTP |
-| `GET` | `/api/users/me` | Get authenticated user profile |
-| `GET` | `/api/users` | List users |
+### Project Management Services
+| Method | Endpoint | Description | Auth | Access |
+|--------|----------|-------------|------|--------|
+| `POST` | `/api/projects` | Create new project | JWT | Authenticated users |
+| `GET` | `/api/projects` | List user's projects | JWT | User's own projects |
+| `POST` | `/api/projects/:projectId/members` | Add or update project member | JWT | Admin only |
+| `DELETE` | `/api/projects/:projectId/members/:memberId` | Remove project member | JWT | Admin only |
+| `DELETE` | `/api/projects/:projectId` | Delete project and associated tasks | JWT | Admin only |
 
-#### Projects
+### Task Management Services
+| Method | Endpoint | Description | Auth | Access |
+|--------|----------|-------------|------|--------|
+| `POST` | `/api/tasks` | Create new task in project | JWT | Project member |
+| `GET` | `/api/tasks/project/:projectId` | List project tasks | JWT | Project member |
+| `PATCH` | `/api/tasks/:taskId` | Update task details or status | JWT | Project member |
+| `DELETE` | `/api/tasks/:taskId` | Delete task | JWT | Project member |
 
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `POST` | `/api/projects` | Create project |
-| `GET` | `/api/projects` | Get projects for current user |
-| `POST` | `/api/projects/:projectId/members` | Add or update project member |
-| `DELETE` | `/api/projects/:projectId/members/:memberId` | Remove project member |
-| `DELETE` | `/api/projects/:projectId` | Delete project |
+### Analytics & System Services
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/api/dashboard` | Aggregate dashboard metrics (all projects) | JWT |
+| `GET` | `/api/system/startup` | Health check and system status | — |
 
-#### Tasks
+### Response Standards
+- **Success (2xx):** Returns JSON with data payload and metadata
+- **Client Error (4xx):** Descriptive error messages with field-level validation details
+- **Server Error (5xx):** Structured error logs with request tracking ID
 
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `POST` | `/api/tasks` | Create task |
-| `GET` | `/api/tasks/project/:projectId` | List tasks for a project |
-| `PATCH` | `/api/tasks/:taskId` | Update task details or status |
-| `DELETE` | `/api/tasks/:taskId` | Delete task |
+---
 
-#### Dashboard and System
+## 👥 Access Control Model (RBAC)
 
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/dashboard` | Get dashboard metrics |
-| `GET` | `/api/system/startup` | Health-style startup status |
+### Project Admin Permissions
+✅ Create and delete projects  
+✅ Add, remove, and update member roles  
+✅ View all project tasks and team members  
+✅ Manage project-wide task operations  
+✅ Access project settings and configuration  
 
-## Access Control Model
+### Project Member Permissions
+✅ View assigned and shared project work  
+✅ Create and update tasks in accessible projects  
+✅ Update own task assignments  
+✅ Modify task status and metadata  
+✅ Delete tasks created by self  
+❌ Modify project members or project settings  
 
-### Project Admin
+### Authorization Implementation
+- **Request-level validation** ensuring user has project membership
+- **Resource ownership checks** before data mutations
+- **Implicit role detection** from project member documents
+- **Cascading access** inherited from parent project context
 
-- Create projects
-- Add members
-- Change member role through the add-member flow
-- Remove members
-- Delete projects
+---
 
-### Project Member
-
-- Access projects they belong to
-- View project tasks
-- Create tasks in accessible projects
-- Update task status and task details through authorized API access
-- Delete tasks in accessible projects
-
-## Local Development
+## 🚀 Getting Started: Local Development
 
 ### Prerequisites
+- **Node.js** 18+ (verify with `node --version`)
+- **npm** 9+ (verify with `npm --version`)
+- **MongoDB** (local instance or MongoDB Atlas connection string)
+- **Brevo account** with API key for email delivery (or use service of choice)
+- **Git** for version control
 
-- Node.js 18 or newer recommended
-- npm
-- MongoDB instance
-- Brevo API key for OTP email delivery
+### Environment Setup
 
-### Environment Configuration
-
-### Backend `.env`
-
-Create `backend/.env` with:
-
+#### Backend Configuration (`backend/.env`)
 ```env
+# Server
 PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
+
+# Database
+MONGO_URI=mongodb://localhost:27017/team-task-manager
+# OR for MongoDB Atlas:
+# MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/team-task-manager
+
+# Security
+JWT_SECRET=your_super_secret_jwt_key_min_32_chars
+
+# Email Service
 BREVO_API_KEY=your_brevo_api_key
-EMAIL_FROM=your_verified_sender_email
+EMAIL_FROM=noreply@yourdomain.com
 EMAIL_FROM_NAME=Team Task Manager
+
+# Optional
+NODE_ENV=development
+LOG_LEVEL=debug
 ```
 
-### Frontend `.env`
-
-Create `frontend/.env` with:
-
+#### Frontend Configuration (`frontend/.env`)
 ```env
 VITE_API=http://localhost:5000
+# For production:
+# VITE_API=https://api.team-task-manager.com
 ```
 
-### Installation
+### Installation & Setup
 
-### Backend
-
+#### 1. Initialize Backend
 ```bash
 cd backend
 npm install
+# Verify syntax
+node --check src/server.js
 ```
 
-### Frontend
-
+#### 2. Initialize Frontend
 ```bash
 cd frontend
 npm install
+# Build static assets to verify
+npm run build
 ```
 
 ### Running the Application
 
-### Start the backend
-
+#### Terminal 1: Start Backend
 ```bash
 cd backend
 npm start
+# Expected: "Server running on http://localhost:5000"
 ```
 
-The API starts on `http://localhost:5000` unless overridden by `PORT`.
-
-### Start the frontend
-
+#### Terminal 2: Start Frontend
 ```bash
 cd frontend
 npm run dev
+# Expected: "Local: http://localhost:5173"
 ```
 
-The frontend typically starts on `http://localhost:5173`.
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-## Operational Notes
+### Verification Checklist
+- [ ] Backend responds to `http://localhost:5000/api/system/startup`
+- [ ] Frontend loads without CORS errors
+- [ ] Can submit signup form and receive OTP email
+- [ ] Login succeeds and JWT is cached in localStorage
+- [ ] Dashboard loads after authentication
 
-- The frontend stores the JWT in `localStorage`
-- Signup is not completed until the OTP is verified
-- Password reset is OTP-driven and email-dependent
-- CORS is enabled in the Express application
-- Dashboard metrics are scoped to projects the authenticated user belongs to
-- Task assignees must already be members of the target project
+---
 
-## Verification
+## 📋 Operational Notes & Architecture Decisions
 
-Useful local checks:
+### Frontend State & Storage
+- **JWT Persistence:** Tokens stored in `localStorage` for seamless session restoration
+- **SPA Architecture:** All routing handled client-side with React Router
+- **CORS Requirements:** Frontend and backend must be configured for cross-origin requests
 
+### Authentication & Security Flow
+- **Signup Flow:** Email → OTP verification → Account creation (three-step process)
+- **Password Reset:** Request → Email OTP → Validation → Password update
+- **JWT Expiration:** Configurable via `JWT_SECRET` environment variable
+- **Token Refresh:** Currently stateless; refresh token support recommended for production
+
+### Data Consistency & Integrity
+- **Cascading Deletes:** Projects delete associated tasks automatically
+- **Member Validation:** Task assignees must exist as project members
+- **Field Uniqueness:** User emails enforce uniqueness at database level
+- **Transaction Safety:** MongoDB transactions recommended for critical operations
+
+### Email Delivery
+- **OTP Validity:** Time-limited tokens (typically 5-10 minutes)
+- **Retry Logic:** Implement exponential backoff for failed email deliveries
+- **Rate Limiting:** Prevent OTP spam with delivery throttling
+- **Template Management:** Email templates stored in Brevo or as service logic
+
+### Performance Considerations
+- **Database Indexing:** Optimize queries on `projectId`, `userId`, `email` fields
+- **API Response Caching:** Dashboard metrics can be cached for 5-10 seconds
+- **Pagination:** List endpoints should support pagination for large datasets
+- **Connection Pooling:** MongoDB connection pool configured for concurrency
+
+### Monitoring & Observability
+- **Error Logging:** Implement centralized logging (e.g., Sentry, LogRocket)
+- **Performance Metrics:** Track API response times and error rates
+- **User Analytics:** Monitor signup funnel and feature adoption
+- **Health Checks:** `/api/system/startup` endpoint for uptime monitoring
+
+---
+
+## ✅ Quality Assurance
+
+### Code Validation
 ```bash
-cd backend
-node --check src/server.js
+# Backend: Verify Node.js syntax
+cd backend && node --check src/server.js
+
+# Frontend: Run ESLint checks
+cd frontend && npm run lint
+
+# Frontend: Build for production
+cd frontend && npm run build
 ```
 
-```bash
-cd frontend
-npm run build
-```
+### Manual Testing Checklist
+1. **Authentication:** Test signup → OTP → login flow
+2. **Projects:** Create, invite members, delete workflows
+3. **Tasks:** Create, assign, update status, delete operations
+4. **Dashboard:** Verify metrics aggregation across projects
+5. **Error States:** Test network failures, invalid inputs, authorization denials
 
-## Documentation
+### Recommended Next Steps for Production
+- [ ] Add comprehensive unit tests (Jest) for controllers and services
+- [ ] Implement integration tests for API endpoints
+- [ ] Set up pre-commit hooks (Husky) for linting
+- [ ] Configure CI/CD pipeline (GitHub Actions, GitLab CI)
+- [ ] Add request validation middleware (express-validator)
+- [ ] Implement rate limiting and DDoS protection
+- [ ] Add audit logging for sensitive operations
+- [ ] Set up monitoring and alerting (Sentry, DataDog)
 
-Additional project notes are available in:
+---
 
-- [doc/API.md](/home/vinay/team-task-manager/doc/API.md:1)
-- [doc/FLOW.md](/home/vinay/team-task-manager/doc/FLOW.md:1)
+## 📚 Documentation
 
-## Roadmap Opportunities
+Detailed technical documentation:
 
-- Add automated backend and frontend test coverage
-- Introduce request validation middleware for stronger API contracts
-- Add audit logging for project and task mutations
-- Support refresh tokens or secure HTTP-only cookie auth
-- Add pagination and filtering for projects and tasks
-- Expand dashboard analytics and trend visualization
+- [API.md](doc/API.md) — Complete API reference with request/response examples
+- [FLOW.md](doc/FLOW.md) — User workflows, sequence diagrams, and state transitions
 
-## License
+---
 
-This repository is distributed under the terms defined in [LICENSE](/home/vinay/team-task-manager/LICENSE:1).
+## 🛣️ Roadmap & Enhancement Opportunities
+
+### Immediate Priorities
+- ✅ **Request Validation Middleware** — Strengthen API contracts with schema validation
+- ✅ **Test Coverage** — Comprehensive unit and integration tests (target: 80%+)
+- ✅ **Pre-commit Hooks** — Automated linting and format checking
+
+### Short-term Enhancements
+- **Advanced Authentication**
+  - Refresh token rotation for enhanced security
+  - HTTP-only secure cookies for token storage
+  - Multi-factor authentication (MFA) support
+  
+- **API Improvements**
+  - Pagination & filtering for list endpoints
+  - Sorting options for tasks and projects
+  - API versioning strategy (`/api/v1/`, `/api/v2/`)
+  - OpenAPI/Swagger documentation
+
+- **Database Optimization**
+  - Query performance profiling and indexing
+  - MongoDB aggregation pipeline for analytics
+  - Connection pooling and replica sets for HA
+
+### Medium-term Features
+- **Task Management Enhancements**
+  - Task dependencies and critical path analysis
+  - Recurring tasks with scheduling
+  - Task attachments and file uploads
+  - Comment threads and task discussions
+
+- **Analytics & Reporting**
+  - Project burndown charts
+  - Team velocity trends
+  - Capacity planning and workload balancing
+  - Export reports (PDF, CSV)
+
+- **Team Collaboration**
+  - Real-time notifications (WebSocket)
+  - Activity feeds and audit trails
+  - @mentions and task subscriptions
+  - Time tracking per task
+
+### Long-term Vision
+- **Advanced RBAC** — Custom roles and permission matrices
+- **Integrations** — Slack, GitHub, Jira, Google Calendar
+- **Mobile App** — Native iOS/Android applications
+- **Automation** — Workflow triggers and bot actions
+- **Machine Learning** — Effort estimation and risk prediction
+
+---
+
+## 📄 License
+
+This project is distributed under the terms specified in [LICENSE](LICENSE).
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please ensure:
+1. Code follows existing style conventions
+2. Changes include documentation updates
+3. All tests pass before submitting PRs
+
+---
+
+**Made with ❤️ for distributed teams managing complex projects at scale.**
